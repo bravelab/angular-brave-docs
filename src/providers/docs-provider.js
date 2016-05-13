@@ -15,7 +15,8 @@
       this.templates = {
         index: 'templates/docs.html',
         list: 'templates/docs-list.html',
-        detail: 'templates/docs-detail.html'
+        detail: 'templates/docs-detail.html',
+        page: 'templates/docs-page.html'
       };
 
       this.$get = function () {

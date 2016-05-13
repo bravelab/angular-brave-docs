@@ -7,8 +7,8 @@
    * @description Docs module for SmartAdmin
    */
   angular
-    .module('app.docs', ['ui.router'])
-    .value('version', '0.0.4');
+    .module('app.docs', ['ui.router', 'app.auth'])
+    .value('version', '0.0.8');
 
 })();
 
@@ -57,6 +57,16 @@
       controllerAs: 'vm'
     });
 
+    $stateProvider.state('app.docs.page', {
+      parent: 'app.docs',
+      url: '/page/:slug',
+      templateUrl: function () {
+        return braveDocsProvider.templates['page'];
+      },
+      controller: 'DocsPageController',
+      controllerAs: 'vm'
+    });
+
     $stateProvider.state('app.docs.detail', {
       parent: 'app.docs',
       url: '/:id/:slug',
@@ -66,6 +76,7 @@
       controller: 'DocsDetailController',
       controllerAs: 'vm'
     });
+
 
   }
 
@@ -143,6 +154,43 @@
   }
 
 })();
+
+(function () {
+  'use strict';
+
+  angular
+    .module('app.docs')
+    .controller('DocsPageController', DocsPageController);
+
+  DocsPageController.$inject = ['$scope', '$stateParams', 'DocsPageService'];
+
+  /**
+   *
+   * @param {Object} $scope - Scope
+   * @param {Object} $stateParams - State
+   * @param {Object} docsPageService - Service
+   * @constructor
+   */
+  function DocsPageController($scope, $stateParams, docsPageService) {
+    var vm = this;
+    vm.doc = null;
+
+    activate();
+
+    /**
+     * @name activate
+     * @desc Actions to be performed when this controller is instantiated
+     * @memberOf app.docs.DocsPageController
+     */
+    function activate() {
+      docsPageService.get($stateParams.slug).then(function (doc) {
+        vm.doc = doc;
+      });
+    }
+  }
+
+})();
+
 
 (function () {
   'use strict';
@@ -249,7 +297,8 @@
       this.templates = {
         index: 'templates/docs.html',
         list: 'templates/docs-list.html',
-        detail: 'templates/docs-detail.html'
+        detail: 'templates/docs-detail.html',
+        page: 'templates/docs-page.html'
       };
 
       this.$get = function () {
@@ -279,6 +328,97 @@
 })();
 
 
+
+(function () {
+
+  'use strict';
+
+  angular
+    .module('app.docs')
+    .factory('DocsPageServiceMock', ['$q', 'Doc', function ($q, Doc) {
+
+      var mock = {
+        id: '89f7191e-d455-42c6-80cd-58ed48bd54b3',
+        name: 'Our Guarantee',
+        slug: 'our-guarantee',
+        type: 'page',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lorem lorem, viverra eu feugiat'
+      };
+
+      var factory = {
+        detail: new Doc(mock)
+      };
+
+      return factory;
+
+    }]);
+
+})();
+
+(function () {
+  'use strict';
+
+  angular
+    .module('app.docs')
+    .factory('DocsPageService', DocsPageService);
+
+  DocsPageService.$inject = ['$http', '$q', 'BraveDocs', 'DocTransformer'];
+
+  /**
+   *
+   * @param {object} $http - Http object
+   * @param {object} $q - Query object
+   * @param {object} braveDocs - app config object provider
+   * @param {object} docTransformer - doc transformer object
+   * @returns {{get: app.docs.get, getAll: app.docs.getAll}} - Service Factory
+   * @constructor
+   */
+  function DocsPageService($http, $q, braveDocs, docTransformer) {
+
+    var cache = {};
+
+    var apiUrl = braveDocs.getApiUrl();
+
+    /**
+     * @name Docs
+     * @desc The Factory to be returned
+     */
+    var factory = {
+      get: get
+    };
+
+    return factory;
+
+    /**
+     * @name get
+     * @desc Get single doc
+     * @param {string} slug The slug of th doc
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function get(slug) {
+      var deferred = $q.defer();
+
+      if (typeof cache[slug] !== 'undefined') {
+        deferred.resolve(cache[slug]);
+      } else {
+        $http({
+          method: 'GET',
+          url: apiUrl + '/docs/page/' + slug,
+          transformResponse: docTransformer
+        })
+          .then(function (data) {
+            cache[slug] = data.data;
+            deferred.resolve(cache[slug]);
+          }, function (data) {
+            deferred.reject(data);
+          });
+      }
+
+      return deferred.promise;
+    }
+  }
+})();
 
 (function () {
 
@@ -321,7 +461,7 @@
     .module('app.docs')
     .factory('DocsService', DocsService);
 
-  DocsService.$inject = ['$http', '$q', 'AuthService', 'BraveDocs', 'DocTransformer', 'DocListTransformer'];
+  DocsService.$inject = ['$http', '$q', 'BraveDocs', 'DocTransformer', 'DocListTransformer'];
 
   /**
    *
@@ -333,14 +473,11 @@
    * @returns {{get: app.docs.get, getAll: app.docs.getAll}} - Service Factory
    * @constructor
    */
-  function DocsService($http, $q, authService, braveDocs, docTransformer, docListTransformer) {
+  function DocsService($http, $q, braveDocs, docTransformer, docListTransformer) {
 
     var cache = {};
 
     var apiUrl = braveDocs.getApiUrl();
-
-    console.log(authService);
-
 
     /**
      * @name Docs
@@ -363,24 +500,25 @@
     function get(id) {
       var deferred = $q.defer();
 
-      authService.getToken().then(function(token){
+      // if (authService.isAuthenticated()) {
+      //   console.log('DocsService::get=>authService.isAuthenticated()', authService.isAuthenticated());
+      // }
 
-        if (typeof cache[id] !== 'undefined') {
-          deferred.resolve(cache[id]);
-        } else {
-          $http({
-            method: 'GET',
-            url: apiUrl + '/docs/' + id + '/',
-            transformResponse: docTransformer
-          })
-            .then(function (data) {
-              cache[id] = data.data;
-              deferred.resolve(cache[id]);
-            }, function (data) {
-              deferred.reject(data);
-            });
-        }
+      if (typeof cache[id] !== 'undefined') {
+        deferred.resolve(cache[id]);
+      } else {
+        $http({
+          method: 'GET',
+          url: apiUrl + '/docs/' + id + '/',
+          transformResponse: docTransformer
+        })
+          .then(function (data) {
+            cache[id] = data.data;
+            deferred.resolve(cache[id]);
+          }, function (data) {
+            deferred.reject(data);
           });
+      }
 
       return deferred.promise;
     }

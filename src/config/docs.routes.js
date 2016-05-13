@@ -43,6 +43,16 @@
       controllerAs: 'vm'
     });
 
+    $stateProvider.state('app.docs.page', {
+      parent: 'app.docs',
+      url: '/page/:slug',
+      templateUrl: function () {
+        return braveDocsProvider.templates['page'];
+      },
+      controller: 'DocsPageController',
+      controllerAs: 'vm'
+    });
+
     $stateProvider.state('app.docs.detail', {
       parent: 'app.docs',
       url: '/:id/:slug',
@@ -52,6 +62,7 @@
       controller: 'DocsDetailController',
       controllerAs: 'vm'
     });
+
 
   }
 
