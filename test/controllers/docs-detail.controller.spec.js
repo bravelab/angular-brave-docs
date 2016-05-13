@@ -40,7 +40,7 @@
       // AuthenticationMock = _AuthenticationMock_;
       docsServiceMock = _DocsServiceMock_; // (2)
 
-      $stateParams.id = docsServiceMock.detail.id;
+      $stateParams.id = docsServiceMock.doc.detail.id;
 
       controller = $controller('DocsDetailController', {
         $scope: $scope,
@@ -56,11 +56,11 @@
 
     it('should have doc in scope', inject(function () {
 
-      $httpBackend.whenGET('/api/docs/' + docsServiceMock.detail.id + '/').respond(docsServiceMock.detail);
+      $httpBackend.whenGET('/api/docs/' + docsServiceMock.doc.detail.id + '/').respond(docsServiceMock.doc.detail);
       $httpBackend.flush();
       $scope.$apply();
 
-      expect(controller.doc).toEqual(docsServiceMock.detail);
+      expect(controller.doc).toEqual(docsServiceMock.doc.detail);
     }));
 
   });

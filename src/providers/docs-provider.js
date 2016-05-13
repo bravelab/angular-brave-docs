@@ -11,7 +11,6 @@
     .provider('BraveDocs', function () {
 
       this.apiUrl = '/api';
-
       this.templates = {
         index: 'templates/docs.html',
         list: 'templates/docs-list.html',

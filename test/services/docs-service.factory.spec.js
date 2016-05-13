@@ -28,6 +28,14 @@
       expect(angular.isFunction(docsService.get)).toBe(true);
     });
 
+    it('should have getPage function', function () {
+      expect(angular.isFunction(docsService.getPage)).toBe(true);
+    });
+
+    it('should have getChunk function', function () {
+      expect(angular.isFunction(docsService.getChunk)).toBe(true);
+    });
+
   });
 
 })();

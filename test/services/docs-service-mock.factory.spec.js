@@ -21,19 +21,19 @@
     }));
 
     it('should have detail object', function () {
-      expect(docsServiceMock.detail).toBeDefined();
+      expect(docsServiceMock.doc.detail).toBeDefined();
     });
 
     it('should defined object keys', function () {
-      expect(docsServiceMock.detail.id).toBeDefined();
-      expect(docsServiceMock.detail.name).toBeDefined();
-      expect(docsServiceMock.detail.slug).toBeDefined();
-      expect(docsServiceMock.detail.type).toBeDefined();
-      expect(docsServiceMock.detail.content).toBeDefined();
+      expect(docsServiceMock.doc.detail.id).toBeDefined();
+      expect(docsServiceMock.doc.detail.name).toBeDefined();
+      expect(docsServiceMock.doc.detail.slug).toBeDefined();
+      expect(docsServiceMock.doc.detail.type).toBeDefined();
+      expect(docsServiceMock.doc.detail.content).toBeDefined();
     });
 
     it('should have list objects', function () {
-      expect(docsServiceMock.list).toBeDefined();
+      expect(docsServiceMock.doc.list).toBeDefined();
     });
 
   });

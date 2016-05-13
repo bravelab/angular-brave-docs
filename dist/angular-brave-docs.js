@@ -87,6 +87,42 @@
 
   angular
     .module('app.docs')
+    .controller('DocsChunkController', DocsChunkController);
+
+  DocsChunkController.$inject = ['$scope', 'DocsService'];
+
+  /**
+   *
+   * @param {Object} $scope - Scope
+   * @param {Object} docsService - Service
+   * @constructor
+   */
+  function DocsChunkController($scope, docsService) {
+
+
+    activate();
+
+    /**
+     * @name activate
+     * @desc Actions to be performed when this controller is instantiated
+     * @memberOf app.docs.DocsChunkController
+     */
+    function activate() {
+      docsService.getChunk($scope.slug).then(function (doc) {
+        console.log($scope.doc);
+        $scope.doc = doc;
+      });
+    }
+
+  }
+
+})();
+
+(function () {
+  'use strict';
+
+  angular
+    .module('app.docs')
     .controller('DocsDetailController', DocsDetailController);
 
   DocsDetailController.$inject = ['$scope', '$stateParams', 'DocsService'];
@@ -162,16 +198,16 @@
     .module('app.docs')
     .controller('DocsPageController', DocsPageController);
 
-  DocsPageController.$inject = ['$scope', '$stateParams', 'DocsPageService'];
+  DocsPageController.$inject = ['$scope', '$stateParams', 'DocsService'];
 
   /**
    *
    * @param {Object} $scope - Scope
    * @param {Object} $stateParams - State
-   * @param {Object} docsPageService - Service
+   * @param {Object} docsService - Service
    * @constructor
    */
-  function DocsPageController($scope, $stateParams, docsPageService) {
+  function DocsPageController($scope, $stateParams, docsService) {
     var vm = this;
     vm.doc = null;
 
@@ -183,7 +219,7 @@
      * @memberOf app.docs.DocsPageController
      */
     function activate() {
-      docsPageService.get($stateParams.slug).then(function (doc) {
+      docsService.getPage($stateParams.slug).then(function (doc) {
         vm.doc = doc;
       });
     }
@@ -252,6 +288,32 @@
 
 })();
 
+(function () {
+  'use strict';
+
+  /**
+   * @ngdoc overview
+   * @name app [app.docs]
+   * @description Config provider for app.docs
+   */
+  angular
+    .module('app.docs')
+    .directive('braveDocsChunk', function () {
+      return {
+        restrict: 'E',
+        template: '<div ng-bind-html="doc.content"></div>',
+        scope: {
+          slug: '@slug'
+        },
+        controller: 'DocsChunkController',
+        link: function ($scope, $element, $attrs) {
+          $scope.slug = $attrs.slug;
+        }
+      };
+    });
+
+}());
+
 /**
  * Doc
  * @namespace app.docs
@@ -293,7 +355,6 @@
     .provider('BraveDocs', function () {
 
       this.apiUrl = '/api';
-
       this.templates = {
         index: 'templates/docs.html',
         list: 'templates/docs-list.html',
@@ -335,117 +396,50 @@
 
   angular
     .module('app.docs')
-    .factory('DocsPageServiceMock', ['$q', 'Doc', function ($q, Doc) {
-
-      var mock = {
-        id: '89f7191e-d455-42c6-80cd-58ed48bd54b3',
-        name: 'Our Guarantee',
-        slug: 'our-guarantee',
-        type: 'page',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lorem lorem, viverra eu feugiat'
-      };
-
-      var factory = {
-        detail: new Doc(mock)
-      };
-
-      return factory;
-
-    }]);
-
-})();
-
-(function () {
-  'use strict';
-
-  angular
-    .module('app.docs')
-    .factory('DocsPageService', DocsPageService);
-
-  DocsPageService.$inject = ['$http', '$q', 'BraveDocs', 'DocTransformer'];
-
-  /**
-   *
-   * @param {object} $http - Http object
-   * @param {object} $q - Query object
-   * @param {object} braveDocs - app config object provider
-   * @param {object} docTransformer - doc transformer object
-   * @returns {{get: app.docs.get, getAll: app.docs.getAll}} - Service Factory
-   * @constructor
-   */
-  function DocsPageService($http, $q, braveDocs, docTransformer) {
-
-    var cache = {};
-
-    var apiUrl = braveDocs.getApiUrl();
-
-    /**
-     * @name Docs
-     * @desc The Factory to be returned
-     */
-    var factory = {
-      get: get
-    };
-
-    return factory;
-
-    /**
-     * @name get
-     * @desc Get single doc
-     * @param {string} slug The slug of th doc
-     * @returns {Promise} - Promise an object
-     * @memberOf app.docs
-     */
-    function get(slug) {
-      var deferred = $q.defer();
-
-      if (typeof cache[slug] !== 'undefined') {
-        deferred.resolve(cache[slug]);
-      } else {
-        $http({
-          method: 'GET',
-          url: apiUrl + '/docs/page/' + slug,
-          transformResponse: docTransformer
-        })
-          .then(function (data) {
-            cache[slug] = data.data;
-            deferred.resolve(cache[slug]);
-          }, function (data) {
-            deferred.reject(data);
-          });
-      }
-
-      return deferred.promise;
-    }
-  }
-})();
-
-(function () {
-
-  'use strict';
-
-  angular
-    .module('app.docs')
     .factory('DocsServiceMock', ['$q', 'Doc', function ($q, Doc) {
 
-      var mock = {
+      var doc = {
         id: '89f7191e-d455-42c6-80cd-58ed48bd54b3',
-        name: 'Collections',
-        slug: 'collections',
+        name: 'Doc',
+        slug: 'doc',
+        type: 'doc',
+        content: 'some doc'
+      };
+
+      var page = {
+        id: '89f7191e-d455-42c6-80cd-58ed48bd54b3',
+        name: 'Some page',
+        slug: 'some-page',
         type: 'page',
-        content: '-some content-'
+        content: 'some page'
+      };
+
+      var chunk = {
+        id: '89f7191e-d455-42c6-80cd-58ed48bd54b3',
+        name: 'Some chunk',
+        slug: 'some-chunk',
+        type: 'chunk',
+        content: 'some chunk'
+      };
+
+      var prepare = function (mock) {
+        return {
+          detail: new Doc(mock),
+          list: {
+            data: [
+              new Doc(mock)
+            ],
+            meta: {
+              totalAmount: 1
+            }
+          }
+        };
       };
 
       var factory = {
-        detail: new Doc(mock),
-        list: {
-          data: [
-            new Doc(mock)
-          ],
-          meta: {
-            totalAmount: 1
-          }
-        }
+        doc: prepare(doc),
+        page: prepare(page),
+        chunk: prepare(chunk)
       };
 
       return factory;
@@ -485,7 +479,9 @@
      */
     var factory = {
       get: get,
-      getAll: getAll
+      getAll: getAll,
+      getPage: getPage,
+      getChunk: getChunk
     };
 
     return factory;
@@ -500,16 +496,43 @@
     function get(id) {
       var deferred = $q.defer();
 
-      // if (authService.isAuthenticated()) {
-      //   console.log('DocsService::get=>authService.isAuthenticated()', authService.isAuthenticated());
-      // }
-
       if (typeof cache[id] !== 'undefined') {
         deferred.resolve(cache[id]);
       } else {
         $http({
           method: 'GET',
           url: apiUrl + '/docs/' + id + '/',
+          transformResponse: docTransformer
+        })
+          .then(function (data) {
+            cache[id] = data.data;
+            deferred.resolve(cache[id]);
+          }, function (data) {
+            deferred.reject(data);
+          });
+      }
+
+      return deferred.promise;
+    }
+
+    /**
+     * @name get
+     * @desc Get single doc by type and slug params
+     * @param {string} type Document type
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getByType(type, slug) {
+      var deferred = $q.defer();
+      var id = type + '-' + slug;
+
+      if (typeof cache[id] !== 'undefined') {
+        deferred.resolve(cache[id]);
+      } else {
+        $http({
+          method: 'GET',
+          url: apiUrl + '/docs/' + type + '/' + slug,
           transformResponse: docTransformer
         })
           .then(function (data) {
@@ -532,13 +555,36 @@
     function getAll() {
       return $http({
         method: 'GET',
-        url: apiUrl + '/docs/',
+        url: apiUrl + '/docs',
         transformResponse: docListTransformer
       })
         .then(function (data) {
           return data;
         });
     }
+    /**
+     * @name get
+     * @desc Get page by slug
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getPage(slug) {
+      return getByType('page', slug);
+    }
+
+    /**
+     * @name get
+     * @desc Get page by slug
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getChunk(slug) {
+      return getByType('chunk', slug);
+    }
+
+
   }
 })();
 

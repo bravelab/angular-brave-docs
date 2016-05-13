@@ -5,16 +5,16 @@
     .module('app.docs')
     .controller('DocsPageController', DocsPageController);
 
-  DocsPageController.$inject = ['$scope', '$stateParams', 'DocsPageService'];
+  DocsPageController.$inject = ['$scope', '$stateParams', 'DocsService'];
 
   /**
    *
    * @param {Object} $scope - Scope
    * @param {Object} $stateParams - State
-   * @param {Object} docsPageService - Service
+   * @param {Object} docsService - Service
    * @constructor
    */
-  function DocsPageController($scope, $stateParams, docsPageService) {
+  function DocsPageController($scope, $stateParams, docsService) {
     var vm = this;
     vm.doc = null;
 
@@ -26,7 +26,7 @@
      * @memberOf app.docs.DocsPageController
      */
     function activate() {
-      docsPageService.get($stateParams.slug).then(function (doc) {
+      docsService.getPage($stateParams.slug).then(function (doc) {
         vm.doc = doc;
       });
     }

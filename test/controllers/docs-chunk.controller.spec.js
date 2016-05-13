@@ -7,7 +7,7 @@
    * @description Docs tests
    *
    */
-  describe('should provide DocsPageController', function () {
+  describe('should provide DocsChunkController', function () {
 
     var // AuthenticationMock,
       docsServiceMock,
@@ -16,9 +16,7 @@
     var $httpBackend,
       $controller,
       $rootScope,
-      $scope,
-      $stateParams,
-      $state;
+      $scope;
 
     beforeEach(function () {
       module('app.docs');
@@ -26,8 +24,6 @@
     });
 
     beforeEach(inject(function ($injector) {
-      $state = $injector.get('$state');
-      $stateParams = $injector.get('$stateParams');
       $rootScope = $injector.get('$rootScope');
       $httpBackend = $injector.get('$httpBackend');
       $controller = $injector.get('$controller');
@@ -40,11 +36,10 @@
       // AuthenticationMock = _AuthenticationMock_;
       docsServiceMock = _DocsServiceMock_; // (2)
 
-      $stateParams.slug = docsServiceMock.page.detail.slug;
+      $scope.slug = docsServiceMock.chunk.detail.slug;
 
-      controller = $controller('DocsPageController', {
+      controller = $controller('DocsChunkController', {
         $scope: $scope,
-        $stateParams: $stateParams,
         docsService: docsServiceMock
       });
 
@@ -54,15 +49,13 @@
       expect(controller).toBeDefined();
     }));
 
-    it('should have doc in scope', inject(function () {
-
-      console.log('/api/docs/page/' + docsServiceMock.page.detail.slug);
-      $httpBackend.whenGET('/api/docs/page/' + docsServiceMock.page.detail.slug).respond(docsServiceMock.page.detail);
-      $httpBackend.flush();
-      $scope.$apply();
-
-      expect(controller.doc).toEqual(docsServiceMock.page.detail);
-    }));
+    // it('should have doc in scope', inject(function () {
+    //  $httpBackend.whenGET('/api/docs/chunk/' + docsServiceMock.chunk.detail.slug).respond(docsServiceMock.chunk.detail);
+    //  $httpBackend.flush();
+    //  $scope.$apply();
+    //
+    //  expect($scope.doc).toEqual(docsServiceMock.chunk.detail);
+    // }));
 
   });
 

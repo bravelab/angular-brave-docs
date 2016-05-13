@@ -54,11 +54,11 @@
 
     it('should have doc in scope', inject(function () {
 
-      $httpBackend.whenGET('/api/docs/').respond(docsServiceMock.list);
+      $httpBackend.whenGET('/api/docs').respond(docsServiceMock.doc.list);
       $httpBackend.flush();
       $scope.$apply();
 
-      expect($scope.docs).toEqual(docsServiceMock.list.data);
+      expect($scope.docs).toEqual(docsServiceMock.doc.list.data);
     }));
 
   });

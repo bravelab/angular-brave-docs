@@ -29,7 +29,9 @@
      */
     var factory = {
       get: get,
-      getAll: getAll
+      getAll: getAll,
+      getPage: getPage,
+      getChunk: getChunk
     };
 
     return factory;
@@ -44,16 +46,43 @@
     function get(id) {
       var deferred = $q.defer();
 
-      // if (authService.isAuthenticated()) {
-      //   console.log('DocsService::get=>authService.isAuthenticated()', authService.isAuthenticated());
-      // }
-
       if (typeof cache[id] !== 'undefined') {
         deferred.resolve(cache[id]);
       } else {
         $http({
           method: 'GET',
           url: apiUrl + '/docs/' + id + '/',
+          transformResponse: docTransformer
+        })
+          .then(function (data) {
+            cache[id] = data.data;
+            deferred.resolve(cache[id]);
+          }, function (data) {
+            deferred.reject(data);
+          });
+      }
+
+      return deferred.promise;
+    }
+
+    /**
+     * @name get
+     * @desc Get single doc by type and slug params
+     * @param {string} type Document type
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getByType(type, slug) {
+      var deferred = $q.defer();
+      var id = type + '-' + slug;
+
+      if (typeof cache[id] !== 'undefined') {
+        deferred.resolve(cache[id]);
+      } else {
+        $http({
+          method: 'GET',
+          url: apiUrl + '/docs/' + type + '/' + slug,
           transformResponse: docTransformer
         })
           .then(function (data) {
@@ -76,12 +105,35 @@
     function getAll() {
       return $http({
         method: 'GET',
-        url: apiUrl + '/docs/',
+        url: apiUrl + '/docs',
         transformResponse: docListTransformer
       })
         .then(function (data) {
           return data;
         });
     }
+    /**
+     * @name get
+     * @desc Get page by slug
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getPage(slug) {
+      return getByType('page', slug);
+    }
+
+    /**
+     * @name get
+     * @desc Get page by slug
+     * @param {string} slug Document symbol
+     * @returns {Promise} - Promise an object
+     * @memberOf app.docs
+     */
+    function getChunk(slug) {
+      return getByType('chunk', slug);
+    }
+
+
   }
 })();
