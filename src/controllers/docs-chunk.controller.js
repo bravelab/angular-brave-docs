@@ -25,7 +25,6 @@
      */
     function activate() {
       docsService.getChunk($scope.slug).then(function (doc) {
-        console.log($scope.doc);
         $scope.doc = doc;
       });
     }
