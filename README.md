@@ -5,7 +5,7 @@ Development
 -----------
 To run the code in your development environment:
 
-1. Run `git clone --recursive git@bitbucket.org:sizeof/angular-brave-docs.git angular-brave-docs`
+1. Run `git clone --recursive git@bravelab.com:bravelab/angular-brave-docs.git angular-brave-docs`
 2. Run `npm install`
 3. Run `gulp` for watch changes in code
 
